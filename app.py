@@ -1,3 +1,4 @@
+from pathlib import Path
 import re
 import joblib
 import pandas as pd
@@ -10,6 +11,11 @@ from url_features import (
     validate_url_input,
     check_domain_dns,
 )
+
+# Relative directory paths (guarantees cross-platform and cloud deployment compatibility)
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "phishing_model.pkl"
+FEATURES_PATH = BASE_DIR / "feature_names.pkl"
 
 
 # ==============================================================================
@@ -30,9 +36,13 @@ st.set_page_config(
 
 @st.cache_resource
 def load_model():
-    """Load the pre-trained Random Forest model and feature list."""
-    model = joblib.load("phishing_model.pkl")
-    feature_names = joblib.load("feature_names.pkl")
+    """Load the pre-trained Random Forest model and feature list using safe relative paths."""
+    if not MODEL_PATH.exists() or not FEATURES_PATH.exists():
+        raise FileNotFoundError(
+            f"Required model files missing in {BASE_DIR}. Ensure phishing_model.pkl and feature_names.pkl are present."
+        )
+    model = joblib.load(MODEL_PATH)
+    feature_names = joblib.load(FEATURES_PATH)
     return model, feature_names
 
 
